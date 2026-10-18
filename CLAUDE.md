@@ -3,7 +3,7 @@
 A local, zero-cost agent that collects public customer reviews, finds recurring problems, and links every finding to real reviews. See `README.md` for usage and `docs/` for evidence.
 
 ## People and working style
-- Two people use this project: **Ayush and Kavya**. If it is unclear which of them is asking, or a requirement is ambiguous, **ask**.
+- This is **Kavya's** project. If a requirement is ambiguous, **ask**.
 - Be honest about what is measured vs assumed. Never claim accuracy that has not been tested. Never invent reviews, customers, users or business outcomes.
 
 ## Hard constraints (do not break these)
@@ -39,7 +39,7 @@ Needs Ollama running with `qwen2.5:3b` (judging) and `nomic-embed-text` (groupin
 
 ## Evaluation protocol
 - `eval/gold_dev.jsonl`: iterate prompts against this. `eval/gold_test.jsonl`: held out; score once per candidate with `--no-details`.
-- **Labels are provisional (single AI rater, not human-verified). Ayush and Kavya should review and correct them.**
+- **Labels are provisional (single AI rater, not human-verified). Kavya should review and correct them.**
 - Gold files hold ids, labels and text hashes only, never review text.
 - Last measured (held-out, n=34, qwen2.5:3b, prompt v3): theme 62% strict / 74% lenient; problem-detection precision 100%, recall 96%. Details: `docs/MVP_RESULTS.md`.
 

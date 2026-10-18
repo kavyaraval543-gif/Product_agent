@@ -57,7 +57,7 @@ The 15 unverified quotes are the evidence check working: e.g. a review contained
 - Where several themes are defensible the label lists acceptable alternatives → _strict_ (primary label) and _lenient_ (any acceptable) scores.
 - Labels are stored as ids + labels + a text hash, **not review text** (`eval/gold_dev.jsonl`, `eval/gold_test.jsonl`).
 
-> **These labels are one rater's judgement (an AI's), not ground truth, and not human-verified.** Ayush and Kavya should review and correct them before anyone quotes these numbers as accuracy. Intervals are 95% Wilson intervals; at n≈35 they are wide.
+> **These labels are one rater's judgement (an AI's), not ground truth, and not human-verified.** A human reviewer (the project owner) should review and correct them before anyone quotes these numbers as accuracy. Intervals are 95% Wilson intervals; at n≈35 they are wide.
 
 ### Results
 | | Dev v2 (n=39) | Dev v3 (n=39) | **Test v2 (n=34)** | **Test v3 (n=34)** |
