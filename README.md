@@ -41,10 +41,11 @@ Needs 64-bit Windows 10/11, ~3 GB of free disk, and 8 GB+ RAM. **Use Python 3.12
 python --version        # expect Python 3.12.x
 ollama --version
 
-# 1. Get the project. EITHER extract the ZIP (Explorer > right-click > Extract All...) and:
-cd "$HOME\Documents\product-discovery-agent"
-#    OR clone it from GitHub once it has been pushed there:
-#    git clone https://github.com/<your-user>/product-discovery-agent.git ; cd product-discovery-agent
+# 1. Get the project: clone it from GitHub (recommended: you get the full history and can push changes)
+cd "$HOME\Documents"
+git clone https://github.com/kavyaraval543-gif/Product_agent.git
+cd Product_agent
+#    (Alternative without git: GitHub page > green "Code" button > "Download ZIP", extract it, and cd into the folder.)
 
 # 2. Create an isolated Python environment and install the project
 python -m venv .venv
@@ -85,7 +86,7 @@ notepad reports\themes.md
 **Optional shortcut: skip the hour of analysis.** If you were given `pda-bitwarden-sample.sqlite3` (300 real Bitwarden reviews already analysed with `qwen2.5:3b`, prompt v3), put it in place before step 6 and go straight to `pda status`, `pda themes` and `pda eval`:
 ```powershell
 New-Item -ItemType Directory -Force data | Out-Null
-Copy-Item "$HOME\Downloads\pda-bitwarden-sample.sqlite3" data\pda.sqlite3
+Copy-Item "$HOME\Downloads\pda-bitwarden-sample.sqlite3" data\pda.sqlite3   # adjust the path to where you saved it
 pda status
 ```
 
