@@ -6,6 +6,14 @@ A local, zero-cost agent that collects public customer reviews, finds recurring 
 - This is **Kavya's** project. If a requirement is ambiguous, **ask**.
 - Be honest about what is measured vs assumed. Never claim accuracy that has not been tested. Never invent reviews, customers, users or business outcomes.
 
+## Workflow: GitHub is the source of truth
+- Repository: https://github.com/kavyaraval543-gif/Product_agent. All work lives there; no ZIP hand-offs.
+- Edit and create files in a **local clone**, run `pytest`, commit, then `git push`. Start each session with `git pull`.
+- While both `main` and `clean-main` exist, work on **`clean-main`** (cleaned history; `main` is to be replaced by it). Once the owner has switched, use `main`.
+- Never commit `data/`, `reports/`, `config.toml`, secrets, API keys or review text (all git-ignored). The repository is public.
+- Write the commit author as the owner's own git identity (`git config user.name` / `user.email`); do not publish anyone's e-mail by accident.
+- Update the "implemented vs not built" table in `README.md` in the same commit as any feature change.
+
 ## Hard constraints (do not break these)
 1. **Budget is ₹0.** No paid APIs, hosting or subscriptions. Only Python, SQLite, Ollama (local LLM), Streamlit, pandas, pytest, Git.
 2. **Respect robots.txt on every request and every redirect hop.** Apple's review RSS and Google Play are rejected on this basis (`docs/FEASIBILITY.md`). If a source forbids access, stop and use another source; do not work around it.
