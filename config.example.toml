@@ -1,0 +1,41 @@
+# Copy to config.toml and edit.   cp config.example.toml config.toml
+# If config.toml is absent, the defaults below are used.
+
+[app]
+# The consumer product to analyse. For source = "amo" this is the add-on slug
+# from its Firefox Add-ons URL: addons.mozilla.org/en-US/firefox/addon/<slug>/
+source = "amo"
+slug   = "bitwarden-password-manager"
+name   = "Bitwarden Password Manager"
+
+[collector]
+# Sent in the User-Agent so the source operator can identify and contact you.
+# Replace with your GitHub repo URL or email.
+contact = "https://github.com/YOUR-USERNAME/product-discovery-agent"
+min_request_interval_s = 1.0   # >= 0.5. Politeness delay between ANY two requests.
+page_size              = 50    # AMO caps this at 50 (verified).
+initial_backfill_limit = 300   # first run: stop after this many new reviews.
+max_pages_per_run      = 20    # hard cap on pages fetched in one run.
+request_timeout_s      = 20
+max_retries            = 3
+
+[cleaning]
+min_words = 4                  # reviews shorter than this are marked unusable
+languages = ["en"]             # reviews detected as another language are marked unusable
+duplicate_min_words = 12       # near-identical long reviews are flagged as duplicates
+
+[llm]
+base_url    = "http://localhost:11434"
+model       = "qwen2.5:3b"     # ~1.9 GB. The only model measured so far. Bigger models may judge better but are slower: re-run `pda eval` to check.
+temperature = 0.0
+num_ctx     = 4096
+timeout_s   = 180
+max_retries = 2
+embedding_model = "nomic-embed-text"   # ~274 MB. Used only to group similar complaints (ollama pull nomic-embed-text)
+
+[grouping]
+method = "embeddings"          # "embeddings" (better) or "tfidf" (no extra model; merges word-overlap only)
+embedding_distance_threshold = 0.75   # lower = finer groups. 0.60-0.85 was swept on real data; see docs/MVP_RESULTS.md
+
+[storage]
+db_path = "data/pda.sqlite3"

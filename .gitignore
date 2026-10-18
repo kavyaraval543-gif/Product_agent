@@ -1,0 +1,24 @@
+# Local data - never commit collected reviews or your personal config
+data/
+config.toml
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+
+# Generated reports (re-creatable). Curated examples go in docs/.
+reports/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+build/
+dist/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store

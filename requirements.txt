@@ -1,0 +1,16 @@
+# Core (needed for collection + analysis + CLI)
+pydantic>=2.6
+requests>=2.31
+pandas>=2.1
+scikit-learn>=1.4
+lingua-language-detector>=2.0
+
+# Dashboard (Phase 5)
+streamlit>=1.35
+plotly>=5.20
+
+# Local scheduling (Phase 4)
+apscheduler>=3.10,<4
+
+# Tests
+pytest>=8
