@@ -20,7 +20,7 @@ A local, zero-cost agent that collects public customer reviews, finds recurring 
 
 ## Commands
 ```bash
-pip install -e ".[dev]" && pytest          # ~195 offline tests; 1 expected failure (documented synonym limitation)
+pip install -e ".[dev]" && pytest          # ~200 offline tests; 1 expected failure (documented synonym limitation)
 pda doctor                                  # checks Python, DB, Ollama + models, robots.txt
 pda collect | analyze [--limit N] | themes --out FILE | eval --gold FILE [--no-details] | status | reclean | run
 ```
@@ -54,6 +54,11 @@ Needs Ollama running with `qwen2.5:3b` (judging) and `nomic-embed-text` (groupin
 2. **Trends:** counts per group by product version and month (measured); flag emerging/worsening groups with a stated minimum-count rule.
 3. **Recommendations + PRD:** LLM writes from supplied evidence ids only; verify every quote; refuse to output a recommendation with no linked reviews; include risks, assumptions, success metrics.
 4. Add tests and an evaluation for each step before moving on.
+
+## Windows
+- The owner runs this on **Windows (PowerShell)**. It has NOT been run on Windows yet; only a Linux box was available. Use **Python 3.12 64-bit** (3.11 lacks Windows wheels for the newest numpy/scipy/lingua).
+- Console output must not crash on legacy code pages: `cli.make_output_safe` (regression test in `tests/test_cli_console.py`). Always name `encoding="utf-8"` for text files.
+- Not built yet: Streamlit dashboard, scoring/trends/recommendations/PRD, agent loop, scheduler (Windows Task Scheduler or APScheduler).
 
 ## Gotchas
 - `pkill -f "<pattern>"` can kill your own shell if the pattern is in the command line; use `pkill -x name`.

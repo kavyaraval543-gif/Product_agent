@@ -8,7 +8,86 @@ A **local, zero-cost** AI agent that discovers publicly available customer revie
 - Keeps **measurements** (counts, ratings, dates) strictly separate from **AI interpretations** (themes, severity), and verifies every quote it shows against the original review text.
 - Ships with an **evaluation harness** and reports its own measured accuracy, including where it is wrong.
 
-> **Status: Phase 1–2 complete (command-line MVP).** The dashboard, opportunity scoring, trend analysis, recommendations/PRD generation, the tool-using agent loop and the scheduler are _planned_, not built — see the [roadmap](#roadmap). This README only describes what exists and has been tested.
+## What is implemented and tested vs what is not built
+
+| | Status | How it was checked |
+|---|---|---|
+| Mozilla Add-ons collector: robots.txt (incl. redirects), 1 req/s, retries, incremental runs | **Implemented, tested** | ~200 offline tests + live run on real reviews (Linux) |
+| SQLite storage, migrations, run/event history, duplicate detection | **Implemented, tested** | tests + live run |
+| Cleaning: PII redaction, language filter, usability rules | **Implemented, tested** | tests + manual audit of 300 real reviews |
+| Local LLM analysis (Ollama, JSON-schema output, verbatim-quote check) | **Implemented, tested** | tests with fakes + live run with `qwen2.5:3b` |
+| Recurring-problem grouping (embeddings) + Markdown report with links to real reviews | **Implemented, tested** | tests + live run (quality: see `docs/MVP_RESULTS.md`) |
+| Evaluation harness (`pda eval`) with provisional labels | **Implemented, tested** | tests; labels are single-rater, not human-verified |
+| Command line (`pda doctor/collect/analyze/themes/eval/status/reclean/run`) | **Implemented, tested** | tests + live run |
+| **Streamlit dashboard** (8 pages) | ❌ **Not built** | Streamlit is listed in `requirements.txt` for the planned dashboard only |
+| Opportunity scoring, trends, recommendations, PRD generator | ❌ **Not built** | planned (Phase 3) |
+| LLM tool-selection agent loop with step limits | ❌ **Not built** | planned (Phase 4) |
+| Scheduled runs | ❌ **Not built** | planned (Phase 4); will use Windows Task Scheduler or APScheduler |
+| **Running on Windows** | ⚠️ **Not run on Windows** | I only had a Linux machine. I reproduced and fixed one Windows-only crash by simulation, and confirmed every dependency publishes Windows wheels. Treat the Windows steps below as untested until you run `pda doctor` and `pytest` yourself |
+
+No API keys, tokens or secrets are used anywhere, so there is no `.env` file to create. All code runs locally; the only network use is read-only requests to Mozilla's public API and downloading models into Ollama.
+
+## Windows quickstart (PowerShell)
+
+Needs 64-bit Windows 10/11, ~3 GB of free disk, and 8 GB+ RAM. **Use Python 3.12 (64-bit):** for Python 3.11 the newest `numpy`, `scipy` and `lingua` have no Windows build, while 3.12 and 3.13 have wheels for every dependency (checked on PyPI).
+
+**One-time installs** (official installers; open a **new** PowerShell window afterwards):
+1. Python 3.12 64-bit from <https://www.python.org/downloads/windows/>. Tick **"Add python.exe to PATH"**.
+2. Git for Windows from <https://git-scm.com/download/win> (only needed if you clone from GitHub).
+3. Ollama for Windows from <https://ollama.com/download/windows>. After installing it runs in the background (tray icon) and serves `http://localhost:11434`.
+
+```powershell
+# 0. Check the tools are available
+python --version        # expect Python 3.12.x
+ollama --version
+
+# 1. Get the project. EITHER extract the ZIP (Explorer > right-click > Extract All...) and:
+cd "$HOME\Documents\product-discovery-agent"
+#    OR clone it from GitHub once it has been pushed there:
+#    git clone https://github.com/<your-user>/product-discovery-agent.git ; cd product-discovery-agent
+
+# 2. Create an isolated Python environment and install the project
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -e ".[dev]"
+
+# 3. Your settings (set collector.contact to your e-mail or GitHub URL: it is sent to Mozilla in the User-Agent)
+Copy-Item config.example.toml config.toml
+notepad config.toml
+
+# 4. Download the two local models (free, ~2.2 GB total, one time)
+ollama pull qwen2.5:3b
+ollama pull nomic-embed-text
+
+# 5. Verify the setup. Every line should say [OK]
+pda doctor
+pytest
+
+# 6. Run it
+pda collect                              # fetches up to 300 reviews, about 10 seconds
+pda analyze --limit 25                   # ~13 s per review on a CPU-only PC; resumable
+pda themes --out reports\themes.md       # writes a UTF-8 Markdown report
+notepad reports\themes.md
+```
+
+**If something fails**
+
+| Symptom | Fix |
+|---|---|
+| `Activate.ps1 cannot be loaded because running scripts is disabled` | `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`, then activate again. Or skip activation and use `.\.venv\Scripts\pda.exe ...` and `.\.venv\Scripts\python.exe -m pytest` |
+| `pda` is not recognised | Activate the environment first (step 2), or call `.\.venv\Scripts\pda.exe` |
+| `pda doctor` says Ollama is unreachable | Start **Ollama** from the Start menu, then run `ollama list` |
+| `pip` tries to compile something / fails | You probably have a 32-bit or 3.11 Python. Install 3.12 **64-bit** and recreate `.venv` |
+| Odd characters or `?` in the console | Use `--out FILE` (always UTF-8), or run `$env:PYTHONUTF8 = "1"` before `pda` |
+| Analysis is slow | Normal without a GPU. Use `--limit`, close other apps, or keep the sample database below |
+
+**Optional shortcut: skip the hour of analysis.** If you were given `pda-bitwarden-sample.sqlite3` (300 real Bitwarden reviews already analysed with `qwen2.5:3b`, prompt v3), put it in place before step 6 and go straight to `pda status`, `pda themes` and `pda eval`:
+```powershell
+New-Item -ItemType Directory -Force data | Out-Null
+Copy-Item "$HOME\Downloads\pda-bitwarden-sample.sqlite3" data\pda.sqlite3
+pda status
+```
 
 ## Keeping this project locally with git (no GitHub or cloud needed)
 
@@ -32,7 +111,7 @@ The obvious sources are off-limits to a well-behaved agent. Apple's review feed 
 
 The default target is **Bitwarden Password Manager** for Firefox; change one line of `config.toml` to analyse another add-on.
 
-## Quickstart
+## Quickstart (macOS / Linux)
 
 Requires Python 3.11+ and ~2.5 GB of disk for the two small models.
 
@@ -49,7 +128,7 @@ cp config.example.toml config.toml                        # set collector.contac
 
 # 3. Check everything is wired up
 pda doctor                      # every line should say [OK]
-pytest                          # ~195 offline tests
+pytest                          # ~200 offline tests
 
 # 4. Run it
 pda collect                     # fetch reviews (first run: up to 300 new reviews, ~10 s)
@@ -124,7 +203,7 @@ Theme **shares** are not stable: the same 248 reviews were 55% "bugs" under one 
 pytest          # all tests run offline: HTTP against a local scripted server, the LLM against fakes
 ```
 
-~195 tests cover robots.txt rules (including Apple's real file), retries/rate limits/redirects, the AMO parser, cleaning, dedupe, incremental collection, the analysis workflow with mocked failures, quote verification, aggregation arithmetic, embedding grouping, schema migration, report escaping and the evaluation maths. They pass on Python 3.11, 3.12 and 3.13. Tests prove the **logic**; they say nothing about how _accurate_ the LLM is — that is what `pda eval` measures.
+~200 tests cover robots.txt rules (including Apple's real file), retries/rate limits/redirects, the AMO parser, cleaning, dedupe, incremental collection, the analysis workflow with mocked failures, quote verification, aggregation arithmetic, embedding grouping, schema migration, report escaping and the evaluation maths. They pass on Python 3.11, 3.12 and 3.13. Tests prove the **logic**; they say nothing about how _accurate_ the LLM is — that is what `pda eval` measures.
 
 ## Known limitations
 

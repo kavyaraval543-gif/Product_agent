@@ -279,7 +279,25 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+def make_output_safe(*streams) -> None:
+    """Never crash on a character the console cannot display.
+
+    Windows consoles often use a legacy code page (cp1252) that cannot encode characters such as the star in
+    "4★" or typographic dashes, which made `pda themes` raise UnicodeEncodeError. Unencodable characters are
+    shown as "?" instead. For clean output set `$env:PYTHONUTF8 = "1"`, or write reports to a file with --out
+    (files are always UTF-8).
+    """
+    for stream in streams:
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            try:
+                reconfigure(errors="replace")
+            except (ValueError, OSError):  # stream already detached/closed
+                pass
+
+
 def main(argv: list[str] | None = None) -> int:
+    make_output_safe(sys.stdout, sys.stderr)
     args = build_parser().parse_args(argv)
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
     try:
